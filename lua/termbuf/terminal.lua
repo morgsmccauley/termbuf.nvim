@@ -1,3 +1,5 @@
+local config = require('termbuf.config')
+
 local AUGROUP = vim.api.nvim_create_augroup("CustomTermBuffer", { clear = true })
 
 ---@type Terminal[]
@@ -31,6 +33,10 @@ function Terminal:new(opts)
 end
 
 function Terminal:open()
+  if config.on_open then
+    config.on_open(self)
+  end
+
   vim.cmd(string.format("buffer %d", self.bufnr))
 
   vim.bo.buflisted = true
