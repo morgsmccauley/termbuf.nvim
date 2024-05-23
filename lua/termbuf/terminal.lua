@@ -43,7 +43,7 @@ function Terminal:open()
   vim.api.nvim_create_autocmd("TermClose", {
     buffer = self.bufnr,
     group = AUGROUP,
-    callback = function(args) self:close(args) end,
+    callback = function() self:close() end,
   })
 end
 
