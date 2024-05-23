@@ -38,12 +38,12 @@ function Terminal:open()
 
   self.job_id = vim.fn.termopen(vim.o.shell)
 
-  vim.fn.startinsert()
+  vim.cmd.startinsert()
 
   vim.api.nvim_create_autocmd("TermClose", {
     buffer = self.bufnr,
     group = AUGROUP,
-    callback = function() self:close() end,
+    callback = function(args) self:close(args) end,
   })
 end
 
@@ -52,13 +52,21 @@ function Terminal:close()
     vim.fn.jobstop(self.job_id)
     self.job_id = nil
   end
-  vim.api.nvim_buf_delete(self.bufnr, { force = true })
+
   for i, term in ipairs(terminals) do
     if term.id == self.id then
       table.remove(terminals, i)
       break
     end
   end
+
+  -- `TermClose` will be called before `BufDelete` so we schedule closing to happen after
+  -- the buffer is deleted to prevent premature deletion
+  vim.schedule(function()
+    if vim.api.nvim_buf_is_valid(self.bufnr) then
+      vim.api.nvim_buf_delete(self.bufnr, { force = true })
+    end
+  end)
 end
 
 function Terminal:send(cmd)

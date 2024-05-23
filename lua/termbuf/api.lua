@@ -19,6 +19,7 @@ local function next_id()
 end
 
 function M.open_terminal(opts)
+  opts = opts or {}
   opts.id = opts.id or next_id()
   local term = Terminal:new(opts)
   term:open()
