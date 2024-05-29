@@ -2,6 +2,7 @@ local M = {}
 
 --- @class TermBufConfig
 --- @field on_open fun(term:Terminal)?
+--- @field on_enter fun(term:Terminal)?
 local config = {}
 
 function M.set(opts)

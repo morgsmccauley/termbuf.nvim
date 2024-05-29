@@ -18,10 +18,10 @@ local function next_id()
   return id
 end
 
-function M.open_terminal(opts)
-  opts = opts or {}
-  opts.id = opts.id or next_id()
-  local term = Terminal:new(opts)
+function M.open_terminal()
+  local term = Terminal:new({
+    id = next_id(),
+  })
   term:open()
   return term
 end

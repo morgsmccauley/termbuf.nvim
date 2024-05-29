@@ -40,16 +40,24 @@ function Terminal:open()
   vim.cmd(string.format("buffer %d", self.bufnr))
 
   vim.bo.buflisted = true
-  vim.wo.number = false
+  vim.opt_local.number = false
 
   self.job_id = vim.fn.termopen(vim.o.shell)
-
-  vim.cmd.startinsert()
 
   vim.api.nvim_create_autocmd("TermClose", {
     buffer = self.bufnr,
     group = AUGROUP,
     callback = function() self:close() end,
+  })
+
+  vim.api.nvim_create_autocmd("BufEnter", {
+    buffer = self.bufnr,
+    group = AUGROUP,
+    callback = function()
+      if config.on_enter then
+        config.on_enter(self)
+      end
+    end,
   })
 end
 
