@@ -18,9 +18,12 @@ local function next_id()
   return id
 end
 
-function M.open_terminal()
+function M.open_terminal(opts)
+  opts = opts or {}
+
   local term = Terminal:new({
     id = next_id(),
+    dir = opts.dir
   })
   term:open()
   return term
