@@ -46,6 +46,7 @@ function M.close_terminal(id)
   for _, term in ipairs(terminals) do
     if term.id == id then
       term:close()
+      terminals[id] = nil
       break
     end
   end
