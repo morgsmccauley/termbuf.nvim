@@ -23,7 +23,8 @@ function M.open_terminal(opts)
 
   local term = Terminal:new({
     id = next_id(),
-    dir = opts.dir
+    dir = opts.dir,
+    on_close = function(id) terminals[id] = nil end
   })
   term:open()
   terminals[term.id] = term

@@ -10,6 +10,7 @@ local AUGROUP = vim.api.nvim_create_augroup("CustomTermBuffer", { clear = true }
 ---@field hidden boolean
 ---@field name string
 ---@field dir string
+---@field on_close fun(id:number)?
 local Terminal = {}
 Terminal.__index = Terminal
 
@@ -24,7 +25,8 @@ function Terminal:new(opts)
     job_id = nil,
     hidden = opts.hidden or false,
     name = opts.name or string.format("terminal://%d", opts.id),
-    dir = opts.dir or vim.uv.cwd()
+    dir = opts.dir or vim.uv.cwd(),
+    on_close = opts.on_close
   }, Terminal)
 
 
@@ -76,6 +78,9 @@ function Terminal:close()
     self.job_id = nil
   end
 
+  if self.on_close then
+    self.on_close(self.id)
+  end
 
   -- `TermClose` will be called before `BufDelete` so we schedule closing to happen after
   -- the buffer is deleted to prevent premature deletion
