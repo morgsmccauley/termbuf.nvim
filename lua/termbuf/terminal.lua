@@ -60,6 +60,19 @@ function Terminal:open()
     end,
   })
 
+  vim.api.nvim_create_autocmd("BufDelete", {
+    buffer = self.bufnr,
+    group = AUGROUP,
+    callback = function()
+      for i, term in ipairs(terminals) do
+        if term.id == self.id then
+          table.remove(terminals, i)
+          break
+        end
+      end
+    end,
+  })
+
   if config.on_open then
     config.on_open(self)
   end
