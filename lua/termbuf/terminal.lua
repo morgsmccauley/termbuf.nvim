@@ -61,7 +61,7 @@ function Terminal:open()
     buffer = self.bufnr,
     group = AUGROUP,
     callback = function()
-      require('termbuf.api').close_terminal(self.id)
+      self:close()
     end,
   })
 
