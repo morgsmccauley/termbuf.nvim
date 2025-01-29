@@ -123,8 +123,8 @@ function Terminal:clear()
   self:send("clear")
 end
 
----Get the name of the currently running process in the terminal
----@return string|nil process_name The name of the current process, or nil if not found
+---Get the full command of the currently running process in the terminal
+---@return string|nil command The full command of the current process, or nil if not found
 function Terminal:get_current_process()
   if not self.job_id then
     return nil
@@ -135,9 +135,19 @@ function Terminal:get_current_process()
     return nil
   end
 
-  -- Use pgrep to find child processes
-  local cmd = string.format("pgrep -P %d -l", pid)
+  -- Use ps to get full command line
+  local cmd = string.format("ps -p %d -o ppid=", pid)
   local handle = io.popen(cmd)
+  if not handle then
+    return nil
+  end
+
+  local ppid = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
+  handle:close()
+
+  -- Get command line of child processes
+  cmd = string.format("ps -p $(ps -o pid= -p %s) -o command=", ppid)
+  handle = io.popen(cmd)
   if not handle then
     return nil
   end
@@ -147,10 +157,9 @@ function Terminal:get_current_process()
 
   if result then
     -- Look through processes to find first non-shell
-    for pid_name in result:gmatch("[^\n]+") do
-      local process = pid_name:match("%d+%s+(%S+)")
-      if process and process ~= "zsh" and process ~= "bash" then
-        return process
+    for command in result:gmatch("[^\n]+") do
+      if not command:match("^[zb]?ash%s*$") then  -- ignore bare shell processes
+        return command
       end
     end
   end
