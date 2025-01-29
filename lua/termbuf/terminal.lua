@@ -2,8 +2,6 @@ local config = require('termbuf.config')
 
 local AUGROUP = vim.api.nvim_create_augroup("CustomTermBuffer", { clear = true })
 
-local api = require('termbuf.api')
-local terminals = api.__terminals
 
 ---@class Terminal
 ---@field id number
@@ -63,12 +61,7 @@ function Terminal:open()
     buffer = self.bufnr,
     group = AUGROUP,
     callback = function()
-      for i, term in ipairs(terminals) do
-        if term.id == self.id then
-          table.remove(terminals, i)
-          break
-        end
-      end
+      require('termbuf.api').close_terminal(self.id)
     end,
   })
 
@@ -83,12 +76,6 @@ function Terminal:close()
     self.job_id = nil
   end
 
-  for i, term in ipairs(terminals) do
-    if term.id == self.id then
-      table.remove(terminals, i)
-      break
-    end
-  end
 
   -- `TermClose` will be called before `BufDelete` so we schedule closing to happen after
   -- the buffer is deleted to prevent premature deletion
