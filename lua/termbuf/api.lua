@@ -31,12 +31,15 @@ function M.open_terminal(opts)
   return term
 end
 
----@return Terminal[] List of open terminals
+---@return { terminal: Terminal, process: string|nil }[] List of open terminals with their current processes
 function M.list_terminals()
   local open_terminals = {}
   for _, term in ipairs(terminals) do
     if term:is_open() then
-      table.insert(open_terminals, term)
+      table.insert(open_terminals, {
+        terminal = term,
+        process = term:get_current_process()
+      })
     end
   end
   return open_terminals
