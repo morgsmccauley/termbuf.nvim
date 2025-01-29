@@ -2,8 +2,8 @@ local config = require('termbuf.config')
 
 local AUGROUP = vim.api.nvim_create_augroup("CustomTermBuffer", { clear = true })
 
----@type Terminal[]
-local terminals = {}
+local api = require('termbuf.api')
+local terminals = api.__terminals
 
 ---@class Terminal
 ---@field id number
@@ -29,7 +29,6 @@ function Terminal:new(opts)
     dir = opts.dir or vim.uv.cwd()
   }, Terminal)
 
-  table.insert(terminals, term)
 
   return term
 end
