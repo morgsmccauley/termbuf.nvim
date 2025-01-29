@@ -63,7 +63,9 @@ function Terminal:open()
     buffer = self.bufnr,
     group = AUGROUP,
     callback = function()
-      self:close()
+      if self.on_close then
+        self.on_close(self.id)
+      end
     end,
   })
 
