@@ -135,36 +135,33 @@ function Terminal:get_current_process()
     return nil
   end
 
-  -- Use ps to get full command line
-  local cmd = string.format("ps -p %d -o ppid=", pid)
+  -- Try to find child processes using pgrep
+  local cmd = string.format("pgrep -P %d", pid)
   local handle = io.popen(cmd)
   if not handle then
     return nil
   end
 
-  local ppid = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
+  local child_pid = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
   handle:close()
 
-  -- Get command line of child processes
-  cmd = string.format("ps -p $(ps -o pid= -p %s) -o command=", ppid)
+  -- If child process found, get its command
+  if child_pid and child_pid ~= "" then
+    cmd = string.format("ps -p %s -o command=", child_pid)
+  else
+    -- Otherwise get the top-level process command
+    cmd = string.format("ps -p %d -o command=", pid)
+  end
+
   handle = io.popen(cmd)
   if not handle then
     return nil
   end
 
-  local result = handle:read("*a")
+  local result = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
   handle:close()
 
-  if result then
-    -- Look through processes to find first non-shell
-    for command in result:gmatch("[^\n]+") do
-      if not command:match("^[zb]?ash%s*$") then  -- ignore bare shell processes
-        return command
-      end
-    end
-  end
-
-  return nil
+  return result ~= "" and result or nil
 end
 
 return Terminal
