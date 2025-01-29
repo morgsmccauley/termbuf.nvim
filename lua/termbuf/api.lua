@@ -26,6 +26,7 @@ function M.open_terminal(opts)
     dir = opts.dir
   })
   term:open()
+  terminals[term.id] = term
   return term
 end
 
