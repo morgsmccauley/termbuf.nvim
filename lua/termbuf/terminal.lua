@@ -135,8 +135,8 @@ function Terminal:get_current_process()
     return nil
   end
 
-  -- Use ps command which works cross-platform
-  local cmd = string.format("ps -o comm= -p %d", pid)
+  -- Use pstree to get the full process hierarchy
+  local cmd = string.format("pstree -p %d", pid)
   local handle = io.popen(cmd)
   if not handle then
     return nil
@@ -146,8 +146,22 @@ function Terminal:get_current_process()
   handle:close()
 
   if result then
-    -- Extract just the base command name
-    return vim.fn.fnamemodify(result, ":t"):gsub("^%s*(.-)%s*$", "%1")
+    -- Extract the last process in the tree (rightmost process)
+    local last_process = result:match("%-([^%(]+)%(") -- Match last process name before its PID
+    if last_process and last_process ~= "zsh" and last_process ~= "bash" then
+      return last_process:gsub("^%s*(.-)%s*$", "%1")
+    end
+    
+    -- If no non-shell process found, try ps for any child processes
+    cmd = string.format("ps -o comm= --ppid %d", pid)
+    handle = io.popen(cmd)
+    if handle then
+      result = handle:read("*l")
+      handle:close()
+      if result and result ~= "zsh" and result ~= "bash" then
+        return vim.fn.fnamemodify(result, ":t"):gsub("^%s*(.-)%s*$", "%1")
+      end
+    end
   end
 
   return nil
