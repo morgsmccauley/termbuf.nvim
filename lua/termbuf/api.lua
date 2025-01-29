@@ -31,23 +31,14 @@ function M.open_terminal(opts)
   return term
 end
 
----@param print_output? boolean Whether to print the terminal list to the console
 ---@return Terminal[] List of open terminals
-function M.list_terminals(print_output)
+function M.list_terminals()
   local open_terminals = {}
   for _, term in ipairs(terminals) do
     if term:is_open() then
       table.insert(open_terminals, term)
-      if print_output then
-        print(string.format("ID: %d, Name: %s", term.id, term.name))
-      end
     end
   end
-  
-  if print_output and #open_terminals == 0 then
-    print("No terminals opened")
-  end
-  
   return open_terminals
 end
 
