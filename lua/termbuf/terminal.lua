@@ -135,33 +135,22 @@ function Terminal:get_current_process()
     return nil
   end
 
-  -- Get all child processes on macOS
-  local cmd = string.format("ps -o comm= -p $(ps -o pid= -p %d -d)", pid)
+  -- Use pgrep to find child processes
+  local cmd = string.format("pgrep -P %d -l", pid)
   local handle = io.popen(cmd)
   if not handle then
     return nil
   end
 
-  local result = handle:read("*a") -- read all output
+  local result = handle:read("*a")
   handle:close()
 
   if result then
-    -- Split into lines and find first non-shell process
-    for line in result:gmatch("[^\n]+") do
-      local process = vim.fn.fnamemodify(line, ":t"):gsub("^%s*(.-)%s*$", "%1")
-      if process ~= "zsh" and process ~= "bash" then
+    -- Look through processes to find first non-shell
+    for pid_name in result:gmatch("[^\n]+") do
+      local process = pid_name:match("%d+%s+(%S+)")
+      if process and process ~= "zsh" and process ~= "bash" then
         return process
-      end
-    end
-
-    -- If no non-shell process found, try direct children
-    cmd = string.format("ps -o comm= -p $(ps -o pid= -p %d)", pid)
-    handle = io.popen(cmd)
-    if handle then
-      result = handle:read("*l")
-      handle:close()
-      if result and result ~= "zsh" and result ~= "bash" then
-        return vim.fn.fnamemodify(result, ":t"):gsub("^%s*(.-)%s*$", "%1")
       end
     end
   end
