@@ -123,4 +123,34 @@ function Terminal:clear()
   self:send("clear")
 end
 
+---Get the name of the currently running process in the terminal
+---@return string|nil process_name The name of the current process, or nil if not found
+function Terminal:get_current_process()
+  if not self.job_id then
+    return nil
+  end
+
+  local pid = vim.fn.jobpid(self.job_id)
+  if not pid then
+    return nil
+  end
+
+  -- Use ps command which works cross-platform
+  local cmd = string.format("ps -o comm= -p %d", pid)
+  local handle = io.popen(cmd)
+  if not handle then
+    return nil
+  end
+
+  local result = handle:read("*l")
+  handle:close()
+
+  if result then
+    -- Extract just the base command name
+    return vim.fn.fnamemodify(result, ":t"):gsub("^%s*(.-)%s*$", "%1")
+  end
+
+  return nil
+end
+
 return Terminal
