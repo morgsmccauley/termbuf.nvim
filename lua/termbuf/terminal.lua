@@ -26,6 +26,7 @@ function Terminal:new(opts)
     hidden = opts.hidden or false,
     name = opts.name or string.format("terminal://%d", opts.id),
     dir = opts.dir or vim.uv.cwd(),
+    cmd = opts.cmd or vim.o.shell,
     on_close = opts.on_close
   }, Terminal)
 
@@ -39,7 +40,7 @@ function Terminal:open()
   vim.bo.buflisted = true
   vim.opt_local.number = false
 
-  self.job_id = vim.fn.termopen(vim.o.shell)
+  self.job_id = vim.fn.termopen(self.cmd)
 
   self:change_dir(self.dir)
 
@@ -142,7 +143,7 @@ function Terminal:get_current_process()
     return nil
   end
 
-  local child_pid = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
+  local child_pid = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1") -- trim whitespace
   handle:close()
 
   -- If child process found, get its command
@@ -158,7 +159,7 @@ function Terminal:get_current_process()
     return nil
   end
 
-  local result = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1")  -- trim whitespace
+  local result = handle:read("*a"):gsub("^%s*(.-)%s*$", "%1") -- trim whitespace
   handle:close()
 
   return result ~= "" and result or nil
