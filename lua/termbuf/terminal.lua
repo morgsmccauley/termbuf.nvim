@@ -40,9 +40,7 @@ function Terminal:open()
   vim.bo.buflisted = true
   vim.opt_local.number = false
 
-  self.job_id = vim.fn.termopen(self.cmd)
-
-  self:change_dir(self.dir)
+  self.job_id = vim.fn.termopen(self.cmd, { cwd = self.dir })
 
   vim.api.nvim_create_autocmd("TermClose", {
     buffer = self.bufnr,
